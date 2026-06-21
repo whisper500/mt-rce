@@ -1,12 +1,12 @@
-FROM php:8.2-apache
+FROM nginx:alpine
 
-# Install bash (opsional, untuk nanti)
-RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+# Hapus default config
+RUN rm /etc/nginx/conf.d/default.conf
 
-# Salin file web ke DocumentRoot Apache
-COPY index.php /var/www/html/
+# Salin file HTML
+COPY index.html /usr/share/nginx/html/
 
-# Expose port 80
+# Salin konfigurasi Nginx kustom (opsional, untuk nanti)
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 EXPOSE 80
-
-# Apache otomatis dijalankan oleh image ini, tidak perlu CMD khusus
