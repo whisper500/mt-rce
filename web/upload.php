@@ -1,10 +1,14 @@
 <?php
+$token = getenv('ACCESS_TOKEN') ?: 'rahasia123';
+if (!isset($_GET['token']) || $_GET['token'] !== $token) {
+    die('Unauthorized');
+}
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['target_file'])) {
     $target_dir = '/data/targets/';
     if (!is_dir($target_dir)) mkdir($target_dir, 0777, true);
     $filename = basename($_FILES['target_file']['name']);
     move_uploaded_file($_FILES['target_file']['tmp_name'], $target_dir . $filename);
-    header('Location: start.php?file=' . urlencode($filename));
+    header('Location: start.php?file=' . urlencode($filename) . '&token=' . urlencode($token));
     exit;
 }
 ?>
