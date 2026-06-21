@@ -1,39 +1,30 @@
 <?php
-$jobId = $_GET['job'] ?? '';
-if (!$jobId) die('No job specified');
-$outputDir = "/data/outputs/$jobId";
-$logFile = "$outputDir/log.txt";
-$csvFile = "$outputDir/results.csv";
-$vulnDir = "$outputDir/vulnerable";
-?>
-<!DOCTYPE html>
-<html>
-<head><title>Output <?= htmlspecialchars($jobId) ?></title></head>
-<body>
-    <h1>Output for Job <?= htmlspecialchars($jobId) ?></h1>
-    <h2>Log</h2>
-    <pre><?php if (file_exists($logFile)) echo htmlspecialchars(file_get_contents($logFile)); else echo 'No log yet.'; ?></pre>
-    <h2>Results CSV</h2>
-    <pre><?php if (file_exists($csvFile)) echo htmlspecialchars(file_get_contents($csvFile)); ?></pre>
-    <h2>Vulnerable Details</h2>
-    <?php
-    if (is_dir($vulnDir)) {
-        $files = scandir($vulnDir);
-        echo "<ul>";
-        foreach ($files as $f) {
-            if ($f != '.' && $f != '..') {
-                echo "<li><a href='?job=$jobId&file=" . urlencode($f) . "'>$f</a></li>";
-            }
-        }
-        echo "</ul>";
-        if (isset($_GET['file'])) {
-            $file = basename($_GET['file']);
-            $path = "$vulnDir/$file";
-            if (file_exists($path)) {
-                echo "<pre>" . htmlspecialchars(file_get_contents($path)) . "</pre>";
-            }
-        }
+$job_id = $_GET['job'] ?? '';
+$output_dir = "/data/outputs/" . basename($job_id);
+if (!is_dir($output_dir)) die("Output not found.");
+
+echo "<h1>Output for Job $job_id</h1>";
+
+// Tampilkan log
+$log_file = "$output_dir/log.txt";
+if (file_exists($log_file)) {
+    echo "<h2>Log</h2><pre>" . htmlspecialchars(file_get_contents($log_file)) . "</pre>";
+}
+
+// Tampilkan CSV
+$csv_file = "$output_dir/results.csv";
+if (file_exists($csv_file)) {
+    echo "<h2>Results CSV</h2><pre>" . htmlspecialchars(file_get_contents($csv_file)) . "</pre>";
+}
+
+// Daftar file vulnerable
+$vuln_dir = "$output_dir/vulnerable";
+if (is_dir($vuln_dir)) {
+    echo "<h2>Vulnerable Targets</h2><ul>";
+    foreach (glob("$vuln_dir/*.txt") as $file) {
+        $name = basename($file);
+        echo "<li><a href='view.php?job=$job_id&file=$name'>$name</a></li>";
     }
-    ?>
-</body>
-</html>
+    echo "</ul>";
+}
+?>

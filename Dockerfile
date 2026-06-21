@@ -1,25 +1,40 @@
+# Gunakan image PHP 8.2 dengan FPM dan Nginx bawaan
 FROM php:8.2-fpm-alpine
 
-# Install dependencies
-RUN apk add --no-cache nginx supervisor bash curl jq
+# Install dependensi yang diperlukan
+RUN apk add --no-cache \
+    nginx \
+    supervisor \
+    bash \
+    curl \
+    jq \
+    coreutils \
+    procps
 
-# Copy konfigurasi
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY php.ini /usr/local/etc/php/conf.d/custom.ini
-
-# Copy aplikasi
+# Buat direktori aplikasi
 WORKDIR /app
-COPY . .
+
+# Salin seluruh file ke dalam container
+COPY . /app/
 
 # Pastikan binary dan script bisa dieksekusi
-RUN chmod +x mt-rce mass-scan.sh batch-domains.sh worker.sh
-RUN chmod -R 777 /app/web
+RUN chmod +x /app/mt-rce /app/mass-scan.sh /app/batch-domains.sh /app/worker.sh
 
-# Buat direktori untuk data persistensi
-VOLUME /data
+# Buat direktori untuk data (volume akan di-mount di sini)
+RUN mkdir -p /data/jobs /data/targets /data/outputs && chmod -R 777 /data
 
-# Expose port
+# Konfigurasi Nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Konfigurasi PHP-FPM
+RUN sed -i 's/^user = www-data/user = nginx/' /usr/local/etc/php-fpm.d/www.conf && \
+    sed -i 's/^group = www-data/group = nginx/' /usr/local/etc/php-fpm.d/www.conf
+
+# Konfigurasi Supervisor
+COPY supervisord.conf /etc/supervisord.conf
+
+# Expose port web
 EXPOSE 80
 
-CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Jalankan Supervisor yang akan menjalankan Nginx, PHP-FPM, dan Worker
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
