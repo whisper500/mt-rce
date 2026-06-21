@@ -1,21 +1,12 @@
-FROM php:8.2-fpm-alpine
+FROM php:8.2-apache
 
-RUN apk add --no-cache nginx bash
+# Install bash (opsional, untuk nanti)
+RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+# Salin file web ke DocumentRoot Apache
+COPY index.php /var/www/html/
 
-COPY . /app/
-RUN chown -R nginx:nginx /app
-
-COPY nginx.conf /etc/nginx/nginx.conf
-
-RUN sed -i 's/^user = www-data/user = nginx/' /usr/local/etc/php-fpm.d/www.conf && \
-    sed -i 's/^group = www-data/group = nginx/' /usr/local/etc/php-fpm.d/www.conf && \
-    sed -i 's|^listen = 127.0.0.1:9000|listen = 127.0.0.1:9000|' /usr/local/etc/php-fpm.d/www.conf
-
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
-
+# Expose port 80
 EXPOSE 80
 
-CMD ["/app/entrypoint.sh"]
+# Apache otomatis dijalankan oleh image ini, tidak perlu CMD khusus
