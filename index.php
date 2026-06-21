@@ -1,5 +1,5 @@
 <?php
-// Token keamanan sederhana (ganti dengan env variable)
+// Token keamanan (pakai env variable)
 $token = getenv('ACCESS_TOKEN') ?: 'rahasia123';
 if (!isset($_GET['token']) || $_GET['token'] !== $token) {
     die('Unauthorized');
