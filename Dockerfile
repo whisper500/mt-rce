@@ -1,12 +1,7 @@
 FROM nginx:alpine
 
-# Hapus default config
-RUN rm /etc/nginx/conf.d/default.conf
-
-# Salin file HTML
+# Biarkan default.conf tetap ada!
+# Salin file HTML ke direktori yang sudah dikonfigurasi default
 COPY index.html /usr/share/nginx/html/
-
-# Salin konfigurasi Nginx kustom (opsional, untuk nanti)
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
